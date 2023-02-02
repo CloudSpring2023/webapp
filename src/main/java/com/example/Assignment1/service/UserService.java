@@ -1,14 +1,20 @@
 package com.example.assignment1.service;
 
 import com.example.assignment1.Exception.DataNotFoundException;
+import com.example.assignment1.Exception.UserAuthrizationException;
 import com.example.assignment1.Exception.UserExistException;
+import com.example.assignment1.entity.UserDto;
 import com.example.assignment1.entity.UserInfo;
+import com.example.assignment1.entity.UserUpdateRequestModel;
 import com.example.assignment1.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -16,38 +22,45 @@ public class UserService {
     UserRepository repository;
 
     //Post method to save info in Database
-    public UserInfo saveUser(UserInfo userinfo)throws UserExistException {
-
-        UserInfo userObj= repository.findByEmailID(userinfo.getEmailID());
-        if(userObj!=null){
-            throw new UserExistException("User Already Exists");
-        }
-        userinfo.setId(userinfo.getId());
-        userinfo.setFName(userinfo.getFName());
-        userinfo.setLName(userinfo.getLName());
-        userinfo.setEmailID(userinfo.getEmailID());
-        userinfo.setPassword(new BCryptPasswordEncoder().encode(userinfo.getPassword()));
-        System.out.println(userinfo);
-        return repository.save(userinfo);
+    @Bean
+    public BCryptPasswordEncoder encoder() {
+        return new BCryptPasswordEncoder();
     }
-    public List<UserInfo> saveUsers(List<UserInfo> usersinfo){
-
-        return repository.saveAll(usersinfo);
+    public String createUser(UserInfo user) throws UserExistException {
+        UserInfo userDto = repository.findByUsername(user.getUsername());
+        if (userDto == null) {
+            user.setPassword(encoder().encode(user.getPassword()));
+            repository.save(user);
+            return "Created User";
+        }
+        throw new UserExistException("User Exists Already");
     }
 
     //To get the User info from Database
-    public List<UserInfo> getUsers(){
-        return repository.findAll();
+    public UserDto getUserDetails(UUID userId) throws DataNotFoundException {
+        Optional<UserInfo> user = repository.findById(userId);
+        if (user.isPresent()) {
+            UserDto dto = UserDto.getUserDto(user.get());
+            return dto;
+        }
+        throw new DataNotFoundException("User Not Found");
     }
     //Get user info by ID
-    public UserInfo getUserById(int id) throws DataNotFoundException {
+    public String updateUserDetails(UUID userId, UserUpdateRequestModel user) throws DataNotFoundException, UserAuthrizationException {
+        Optional<UserInfo> userObj = repository.findById(userId);
+        if (userObj.isPresent()) {
+            if(!userObj.get().getUsername().equals(user.getUsername()))
+                throw new UserAuthrizationException("Forbidden to Update Data");
+            UserInfo dto = userObj.get();
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setPassword(encoder().encode(user.getPassword()));
+            dto.setUsername(user.getUsername());
+            repository.save(dto);
+            return "Updated User Details Successfully";
 
-        UserInfo userInfo = repository.findById(id).orElse(null);
-        if(userInfo!=null){
-            return userInfo;
         }
-        throw new DataNotFoundException("Data Not Found");
-
+        throw new DataNotFoundException("User Not Found");
     }
     /*public UserInfo getUserByEmailId(String name) {
         return repository.findByEmailID(name);
@@ -57,20 +70,14 @@ public class UserService {
         return repository.findByEmail(email);
     }*/
 //method for deleting the User
-    public String deleteUser(int id){
-        repository.deleteById(id);
-        return "User Removed!!" + id;
-    }
-
     //Method to update
 
-    public UserInfo updateUserInfo(UserInfo userInfo){
-        UserInfo existingUserInfo = repository.findById(userInfo.getId()).orElse(null);
-        existingUserInfo.setFName(userInfo.getFName());
-        existingUserInfo.setLName(userInfo.getLName());
-        //  userinfo.setPassword(new BCryptPasswordEncoder().encode(userinfo.getPassword()));
-        existingUserInfo.setPassword(new BCryptPasswordEncoder().encode(userInfo.getPassword()));
-        return repository.save(existingUserInfo);
-
+    public UserInfo loadUserByUsername(String username) {
+        // TODO Auto-generated method stub
+        UserInfo user = repository.findByUsername(username);
+        if (user == null) {
+            return null;
+        }
+        return user;
     }
 }

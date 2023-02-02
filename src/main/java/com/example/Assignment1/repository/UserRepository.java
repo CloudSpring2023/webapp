@@ -4,9 +4,11 @@ import com.example.assignment1.entity.UserInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
+
 @Repository
-public interface UserRepository extends JpaRepository<UserInfo,Integer> {
-    UserInfo findByEmailID(String name);
+public interface UserRepository extends JpaRepository<UserInfo, UUID> {
+    UserInfo findByUsername(String username);
 //    UserInfo findByEmail(String email)
 
 }
