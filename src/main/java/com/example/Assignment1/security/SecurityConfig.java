@@ -22,10 +22,8 @@ public class SecurityConfig {
     CustomUserDetailsService userService;
 
 
-    @Bean
-    public BCryptPasswordEncoder encoder(){
-        return new BCryptPasswordEncoder();
-    }
+   // @Bean
+    //public BCryptPasswordEncoder encoder(){return new BCryptPasswordEncoder();}
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
