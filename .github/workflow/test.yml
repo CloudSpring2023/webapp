@@ -3,11 +3,9 @@ name: CI Workflow
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
-
 jobs:
-  build:
+  build-my-code:
+
     runs-on: ubuntu-latest
 
     steps:
