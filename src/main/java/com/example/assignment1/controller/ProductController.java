@@ -1,6 +1,6 @@
 package com.example.assignment1.controller;
-
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import com.example.assignment1.Exception.DataNotFoundException;
 import com.example.assignment1.Exception.InvalidUserInputException;
@@ -114,6 +114,7 @@ public class ProductController {
             // TODO Auto-generated catch block
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
+            System.out.println(e);
             return new ResponseEntity<String>(UserConstants.InternalErr, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -121,14 +122,14 @@ public class ProductController {
 
     @PatchMapping(value = "/{productId}")
     public ResponseEntity<?> patchUserDetails(@PathVariable("productId") Long productId,
-                                              @Valid @RequestBody Product product, HttpServletRequest request, Errors error) {
+                                              @RequestBody Map<String, Object> updates, HttpServletRequest request) {
         try {
             if (productId.toString().isBlank() || productId.toString().isEmpty()) {
                 throw new InvalidUserInputException("Enter Valid Product Id");
             }
             authservice.isAuthorised(productService.getProduct(productId).getOwnerUserId(),
                     request.getHeader("Authorization").split(" ")[1]);
-            return new ResponseEntity<String>(productService.updateProductDetails(productId, product),
+            return new ResponseEntity<String>(productService.patchProductDetails(productId, updates),
                     HttpStatus.NO_CONTENT);
         } catch (InvalidUserInputException e) {
             // TODO Auto-generated catch block

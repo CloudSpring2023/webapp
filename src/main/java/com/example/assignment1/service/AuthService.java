@@ -1,5 +1,8 @@
 package com.example.assignment1.service;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Optional;
 import com.example.assignment1.Exception.DataNotFoundException;
 import com.example.assignment1.Exception.UserAuthrizationException;
 import com.example.assignment1.entity.UserInfo;
@@ -7,24 +10,17 @@ import com.example.assignment1.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Optional;
-import java.util.UUID;
-
 @Service
 public class AuthService {
 
     @Autowired
-    UserRepository repository;
+    UserRepository userrepo;
 
     public BCryptPasswordEncoder PassEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    public UserInfo getUserDetailsAuth(Long userId) throws DataNotFoundException {
-        Optional<UserInfo> user = repository.findById(userId);
+    public UserInfo getUserDetailsAuth(Long userId) throws DataNotFoundException{
+        Optional<UserInfo> user = userrepo.findById(userId);
         if (user.isPresent()) {
             return user.get();
         }
@@ -54,4 +50,5 @@ public class AuthService {
 //        System.out.println("Value of Token" + " "+ decodedStr);
         return userName;
     }
+
 }

@@ -1,5 +1,5 @@
 package com.example.assignment1.service;
-
+import java.util.Optional;
 import com.example.assignment1.Exception.DataNotFoundException;
 import com.example.assignment1.Exception.UserAuthrizationException;
 import com.example.assignment1.Exception.UserExistException;
@@ -11,38 +11,38 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.Optional;@Service
+@Service
 public class UserService {
-    @Autowired
-    UserRepository repository;
 
-    //Post method to save info in Database
+    @Autowired
+    UserRepository userrepo;
+
     @Bean
     public BCryptPasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
     }
-    public String createUser(UserInfo user) throws UserExistException {
-        UserInfo userDto = repository.findByUsername(user.getUsername());
+
+    public UserInfo createUser(UserInfo user) throws UserExistException {
+        UserInfo userDto = userrepo.findByUsername(user.getUsername());
         if (userDto == null) {
             user.setPassword(encoder().encode(user.getPassword()));
-            repository.save(user);
-            return "Created User";
+            userrepo.save(user);
+            return user;
         }
         throw new UserExistException("User Exists Already");
     }
 
-    //To get the User info from Database
     public UserDto getUserDetails(Long userId) throws DataNotFoundException {
-        Optional<UserInfo> user = repository.findById(userId);
+        Optional<UserInfo> user = userrepo.findById(userId);
         if (user.isPresent()) {
             UserDto dto = UserDto.getUserDto(user.get());
             return dto;
         }
         throw new DataNotFoundException("User Not Found");
     }
-    //Get user info by ID
+
     public String updateUserDetails(Long userId, UserUpdateRequestModel user) throws DataNotFoundException, UserAuthrizationException {
-        Optional<UserInfo> userObj = repository.findById(userId);
+        Optional<UserInfo> userObj = userrepo.findById(userId);
         if (userObj.isPresent()) {
             if(!userObj.get().getUsername().equals(user.getUsername()))
                 throw new UserAuthrizationException("Forbidden to Update Data");
@@ -51,7 +51,7 @@ public class UserService {
             dto.setLastName(user.getLastName());
             dto.setPassword(encoder().encode(user.getPassword()));
             dto.setUsername(user.getUsername());
-            repository.save(dto);
+            userrepo.save(dto);
             return "Updated User Details Successfully";
 
         }
@@ -60,10 +60,11 @@ public class UserService {
 
     public UserInfo loadUserByUsername(String username) {
         // TODO Auto-generated method stub
-        UserInfo user = repository.findByUsername(username);
+        UserInfo user = userrepo.findByUsername(username);
         if (user == null) {
             return null;
         }
         return user;
     }
+
 }
