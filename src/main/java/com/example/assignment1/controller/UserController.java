@@ -6,6 +6,7 @@ import com.example.assignment1.Exception.DataNotFoundException;
 import com.example.assignment1.Exception.InvalidUserInputException;
 import com.example.assignment1.Exception.UserAuthrizationException;
 import com.example.assignment1.Exception.UserExistException;
+import com.example.assignment1.constants.UserConstants;
 import com.example.assignment1.entity.UserDto;
 import com.example.assignment1.entity.UserInfo;
 import com.example.assignment1.entity.UserUpdateRequestModel;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.assignment1.constants.UserConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -97,14 +97,14 @@ public class UserController {
     }
 
     @PostMapping()
-    public ResponseEntity<String> createUser(@Valid @RequestBody UserInfo user, Errors error){
+    public ResponseEntity<?> createUser(@Valid @RequestBody UserInfo user, Errors error){
         try {
             if(error.hasErrors()) {
                 String response = error.getAllErrors().stream().map(ObjectError::getDefaultMessage)
                         .collect(Collectors.joining(","));
                 throw new InvalidUserInputException(response);
             }
-            return new ResponseEntity<String>( userService.createUser(user),HttpStatus.CREATED);
+            return new ResponseEntity<UserInfo>( userService.createUser(user),HttpStatus.CREATED);
         } catch (InvalidUserInputException e) {
             // TODO Auto-generated catch block
             return new ResponseEntity<String>( e.getMessage(),HttpStatus.BAD_REQUEST);
