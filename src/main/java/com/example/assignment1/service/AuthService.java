@@ -23,7 +23,7 @@ public class AuthService {
         return new BCryptPasswordEncoder();
     }
 
-    public UserInfo getUserDetailsAuth(UUID userId) throws DataNotFoundException {
+    public UserInfo getUserDetailsAuth(Long userId) throws DataNotFoundException {
         Optional<UserInfo> user = repository.findById(userId);
         if (user.isPresent()) {
             return user.get();
@@ -31,7 +31,7 @@ public class AuthService {
         throw new DataNotFoundException("User Not Found");
     }
 
-    public boolean isAuthorised(UUID userId,String tokenEnc) throws DataNotFoundException, UserAuthrizationException {
+    public boolean isAuthorised(Long userId,String tokenEnc) throws DataNotFoundException, UserAuthrizationException {
 
         UserInfo user=getUserDetailsAuth(userId);
         byte[] token = Base64.getDecoder().decode(tokenEnc);
@@ -44,5 +44,14 @@ public class AuthService {
             throw new UserAuthrizationException("Forbidden to access");
         }
         return true;
+    }
+
+    public String getUserNameFromToken(String tokenEnc) {
+        byte[] token = Base64.getDecoder().decode(tokenEnc);
+        String decodedStr = new String(token, StandardCharsets.UTF_8);
+        String userName = decodedStr.split(":")[0];
+        String passWord = decodedStr.split(":")[1];
+//        System.out.println("Value of Token" + " "+ decodedStr);
+        return userName;
     }
 }
