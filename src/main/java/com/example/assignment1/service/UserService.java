@@ -11,12 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-@Service
+import java.util.Optional;@Service
 public class UserService {
     @Autowired
     UserRepository repository;
@@ -37,7 +32,7 @@ public class UserService {
     }
 
     //To get the User info from Database
-    public UserDto getUserDetails(UUID userId) throws DataNotFoundException {
+    public UserDto getUserDetails(Long userId) throws DataNotFoundException {
         Optional<UserInfo> user = repository.findById(userId);
         if (user.isPresent()) {
             UserDto dto = UserDto.getUserDto(user.get());
@@ -46,7 +41,7 @@ public class UserService {
         throw new DataNotFoundException("User Not Found");
     }
     //Get user info by ID
-    public String updateUserDetails(UUID userId, UserUpdateRequestModel user) throws DataNotFoundException, UserAuthrizationException {
+    public String updateUserDetails(Long userId, UserUpdateRequestModel user) throws DataNotFoundException, UserAuthrizationException {
         Optional<UserInfo> userObj = repository.findById(userId);
         if (userObj.isPresent()) {
             if(!userObj.get().getUsername().equals(user.getUsername()))
@@ -62,15 +57,6 @@ public class UserService {
         }
         throw new DataNotFoundException("User Not Found");
     }
-    /*public UserInfo getUserByEmailId(String name) {
-        return repository.findByEmailID(name);
-    }*/
-
-    /*public UserInfo getUserByEmail(String email){
-        return repository.findByEmail(email);
-    }*/
-//method for deleting the User
-    //Method to update
 
     public UserInfo loadUserByUsername(String username) {
         // TODO Auto-generated method stub
