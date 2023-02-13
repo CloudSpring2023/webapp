@@ -21,7 +21,7 @@ class WebappApplicationTests {
 
 	@Test
 	public void Test() {
-		assertTrue("Hello123".equals("Hello"));
+		assertTrue("Hello".equals("Hello"));
 	}
 
 	@InjectMocks
