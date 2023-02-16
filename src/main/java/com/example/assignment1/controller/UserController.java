@@ -104,14 +104,15 @@ public class UserController {
                         .collect(Collectors.joining(","));
                 throw new InvalidUserInputException(response);
             }
-            return new ResponseEntity<UserInfo>( userService.createUser(user),HttpStatus.CREATED);
-        } catch (InvalidUserInputException e) {
+            return new ResponseEntity<UserDto>(userService.createUser(user),HttpStatus.CREATED);
+            } catch (InvalidUserInputException e) {
             // TODO Auto-generated catch block
             return new ResponseEntity<String>( e.getMessage(),HttpStatus.BAD_REQUEST);
         }
         catch (UserExistException e) {
             // TODO Auto-generated catch block
             return new ResponseEntity<String>( e.getMessage(),HttpStatus.BAD_REQUEST);
+
         }
         catch(Exception e) {
             return new ResponseEntity<String>(UserConstants.InternalErr,HttpStatus.INTERNAL_SERVER_ERROR);
