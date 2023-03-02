@@ -1,4 +1,4 @@
-package com.example.assignment1.security;
+package com.example.assignment1.config;
 
 import com.example.assignment1.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;

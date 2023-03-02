@@ -1,13 +1,18 @@
 package com.example.assignment1.controller;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.example.assignment1.Exception.BadInputException;
 import com.example.assignment1.Exception.DataNotFoundException;
 import com.example.assignment1.Exception.InvalidUserInputException;
 import com.example.assignment1.Exception.UserAuthrizationException;
 import com.example.assignment1.constants.UserConstants;
+import com.example.assignment1.entity.Image;
 import com.example.assignment1.entity.Product;
 import com.example.assignment1.service.AuthService;
+import com.example.assignment1.service.ImageService;
 import com.example.assignment1.service.ProductService;
 import com.example.assignment1.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,19 +21,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
+
 @RestController()
 @RequestMapping("v1/product")
 public class ProductController {
@@ -41,6 +38,9 @@ public class ProductController {
 
     @Autowired
     AuthService authservice;
+
+    @Autowired
+    ImageService imageService;
 
     @RestControllerAdvice
     public class MyExceptionHandler {
@@ -169,5 +169,118 @@ public class ProductController {
             return new ResponseEntity<String>(UserConstants.InternalErr, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+    }
+
+
+
+    @PostMapping(value = "/{product_id}/image", produces = "application/json", consumes = "multipart/form-data")
+    public ResponseEntity<?> saveImage(@PathVariable("product_id") Long productId,
+                                       @RequestParam("file") MultipartFile file, HttpServletRequest request) {
+        try {
+            if (productId.toString().isBlank() || productId.toString().isEmpty()) {
+                throw new InvalidUserInputException("Enter Valid Product Id");
+            }
+            Long userId = productService.getProduct(productId).getOwnerUserId();
+            System.out.println(userId);
+            authservice.isAuthorised(userId, request.getHeader("Authorization").split(" ")[1]);
+            return new ResponseEntity<com.example.assignment1.entity.Image>(imageService.saveImage(productId, userId, file), HttpStatus.CREATED);
+        } catch (InvalidUserInputException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (UserAuthrizationException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (DataNotFoundException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            System.out.println(e);
+            return new ResponseEntity<String>(UserConstants.InternalErr, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(value = "/{product_id}/image", produces = "application/json")
+    public ResponseEntity<?> getAllImages(@PathVariable("product_id") Long productId, HttpServletRequest request) {
+        try {
+            if (productId.toString().isBlank() || productId.toString().isEmpty()) {
+                throw new InvalidUserInputException("Enter Valid Product Id");
+            }
+            Long userId = productService.getProduct(productId).getOwnerUserId();
+            System.out.println(userId);
+            authservice.isAuthorised(userId, request.getHeader("Authorization").split(" ")[1]);
+            return new ResponseEntity<List<com.example.assignment1.entity.Image>>(imageService.getAllImages(productId, userId), HttpStatus.OK);
+        } catch (InvalidUserInputException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (UserAuthrizationException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (DataNotFoundException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            System.out.println(e);
+            return new ResponseEntity<String>(UserConstants.InternalErr, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(value = "/{product_id}/image/{image_id}", produces = "application/json")
+    public ResponseEntity<?> getImage(@PathVariable("product_id") Long productId,
+                                      @PathVariable("image_id") Long imageId, HttpServletRequest request) {
+        try {
+            if (productId.toString().isBlank() || productId.toString().isEmpty() || imageId.toString().isBlank()
+                    || imageId.toString().isEmpty()) {
+                throw new InvalidUserInputException("Enter Valid Product Id / ImageId");
+            }
+            Long userId = productService.getProduct(productId).getOwnerUserId();
+            System.out.println(userId);
+            authservice.isAuthorised(userId, request.getHeader("Authorization").split(" ")[1]);
+            return new ResponseEntity<com.example.assignment1.entity.Image>(imageService.getImage(productId, userId, imageId), HttpStatus.OK);
+        } catch (UserAuthrizationException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (InvalidUserInputException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (BadInputException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (DataNotFoundException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            System.out.println(e);
+            return new ResponseEntity<String>(UserConstants.InternalErr, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping(value = "/{product_id}/image/{image_id}", produces = "application/json")
+    public ResponseEntity<?> deleteImage(@PathVariable("product_id") Long productId,
+                                         @PathVariable("image_id") Long imageId, HttpServletRequest request) {
+        try {
+            if (productId.toString().isBlank() || productId.toString().isEmpty() || imageId.toString().isBlank()
+                    || imageId.toString().isEmpty()) {
+                throw new InvalidUserInputException("Enter Valid Product Id / ImageId");
+            }
+            Long userId = productService.getProduct(productId).getOwnerUserId();
+            System.out.println(userId);
+            authservice.isAuthorised(userId, request.getHeader("Authorization").split(" ")[1]);
+            return new ResponseEntity<Image>(imageService.deleteImage(productId, userId, imageId), HttpStatus.NO_CONTENT);
+        } catch (UserAuthrizationException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.FORBIDDEN);
+        } catch (InvalidUserInputException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (BadInputException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (DataNotFoundException e) {
+            // TODO Auto-generated catch block
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            System.out.println(e);
+            return new ResponseEntity<String>(UserConstants.InternalErr, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
