@@ -19,6 +19,9 @@ public class ProductService {
     @Autowired
     UserService userService;
 
+    @Autowired
+    ImageService imageService;
+
     public Product createProduct(Product product, String userName)
             throws UserAuthrizationException, InvalidUserInputException {
         // TODO Auto-generated method stub
@@ -106,7 +109,8 @@ public class ProductService {
                     p.setManufacturer(manufacture);
                     break;
                 case "quantity":
-                    Integer quantity = Integer.parseInt((String) map.getValue());
+//                    Integer quantity = Integer.parseInt((String) map.getValue());
+                    int quantity=0;
                     if (quantity < 0 || quantity > 100)
                         throw new InvalidUserInputException("Product quantity should be btw 1 and 100");
                     p.setQuantity(quantity);
