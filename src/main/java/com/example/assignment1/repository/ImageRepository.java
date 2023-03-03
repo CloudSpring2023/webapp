@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface ImageRepository extends JpaRepository<Image, Long> {
 
-    @Query(value="select*from image where product_id =?",
+    @Query(value="select*from image where product_id =1",
             nativeQuery = true)
     List<Image> findImageByProductId(Long productId);
 }
