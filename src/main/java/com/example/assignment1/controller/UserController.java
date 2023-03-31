@@ -12,6 +12,9 @@ import com.example.assignment1.entity.UserInfo;
 import com.example.assignment1.entity.UserUpdateRequestModel;
 import com.example.assignment1.service.AuthService;
 import com.example.assignment1.service.UserService;
+import com.timgroup.statsd.StatsDClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,10 +40,17 @@ public class UserController {
     @Autowired
     AuthService authService;
 
+    @Autowired
+    private StatsDClient statsDClient;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
 
     @GetMapping(value = "/{userId}")
     public ResponseEntity<?> getUserDetails(@PathVariable("userId") Long userId,HttpServletRequest request){
         try {
+            logger.info("Start of UserController.getUserDetails with userId ");
+            statsDClient.incrementCounter("endpoint.getUserDetails.http.get");
             if(userId.toString().isBlank()||userId.toString().isEmpty()) {
                 throw new InvalidUserInputException("Enter Valid User Id");
             }
@@ -68,6 +78,8 @@ public class UserController {
     public ResponseEntity<?> updateUserDetails(@PathVariable("userId") Long userId,@Valid @RequestBody UserUpdateRequestModel user,
                                                HttpServletRequest request,Errors error){
         try {
+            logger.info("This is User Put method for User: ");
+            statsDClient.incrementCounter("endpoint.updateUserDetails.http.put");
             if(userId.toString().isBlank()||userId.toString().isEmpty()) {
                 throw new InvalidUserInputException("Enter Valid User Id");
             }
@@ -99,6 +111,8 @@ public class UserController {
     @PostMapping()
     public ResponseEntity<?> createUser(@Valid @RequestBody UserInfo user, Errors error){
         try {
+            logger.info("Start of UserController.createUser with userId "+user.getId());
+            statsDClient.incrementCounter("endpoint.createUser.http.post");
             if(error.hasErrors()) {
                 String response = error.getAllErrors().stream().map(ObjectError::getDefaultMessage)
                         .collect(Collectors.joining(","));
