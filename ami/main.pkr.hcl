@@ -69,32 +69,9 @@ build {
     "source.amazon-ebs.my-ami"
   ]
 
-  provisioner "shell" {
-    script = "script.sh"
-  }
-
-  provisioner "file" {
-    source      = "webapp-0.0.1-SNAPSHOT.jar"
-    destination = "webapp-0.0.1-SNAPSHOT.jar"
-  }
-
-
-  provisioner "file" {
-    source      = "webservice.service"
-    destination = "/tmp/"
-  }
-
-  // provisioner "shell" {
-  //   inline = [
-  //     "sudo chmod 770 /home/ec2-user/webapp-0.0.1-SNAPSHOT.jar",
-  //     "sudo cp /tmp/webservice.service /etc/systemd/system",
-  //     "sudo chmod 770 /etc/systemd/system/webservice.service",
-  //     "sudo systemctl start webservice.service",
-  //     "sudo systemctl enable webservice.service",
-  //     "sudo systemctl restart webservice.service",
-  //     "sudo systemctl status webservice.service",
-  //     "echo '****** Copied webservice! *******'"
-  //   ]
-  // }
+  provisioner "file" {source = "webapp-0.0.1-SNAPSHOT.jar" destination = "webapp-0.0.1-SNAPSHOT.jar"}
+  provisioner "file" {source = "cloudwatch-config.json"destination = "/tmp/cloudwatch-config.json" }
+  provisioner "shell" {script = "script.sh" }
+  provisioner "file" {source = "webservice.service"destination = "/tmp/"}
 
 }
