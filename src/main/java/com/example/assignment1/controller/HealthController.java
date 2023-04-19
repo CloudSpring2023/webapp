@@ -26,6 +26,7 @@ public class HealthController {
         statsDClient.incrementCounter("endpoint.getHealth.http.get");
         return new ResponseEntity<UserDto>( HttpStatus.OK);
     }
+    
     @GetMapping(value = "/test")
     public ResponseEntity<?> gettest() {
         logger.info("This is Testing Get method for Checking Healthz ");
